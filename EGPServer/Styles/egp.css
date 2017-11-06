@@ -1,0 +1,80 @@
+﻿html, body, #wrapper {
+    height:100%
+}
+
+div.panel {
+    height:100%;
+    width:100%;
+}
+
+
+div.map{
+    height:100%;
+    min-height:250px;
+}
+
+#mada {
+    height:100%;
+    width:100%;
+    background-image: url('Images/mada.png');
+    background-repeat:no-repeat;
+    background-position:center;
+    opacity:0.2;
+}
+
+.panel-heading {
+    padding:5px!important;
+}
+
+#page-wrapper {
+    height:90%;
+}
+
+
+/*http://stackoverflow.com/questions/21504418/how-to-make-a-responsive-grid-of-photos-using-twitter-bootstrap-if-heights-are-d*/
+.componentLink {
+    display: block;
+    text-indent: -1000px; /* hide link text */
+    overflow: hidden;
+    background-size: cover;
+    width: 100%;
+    height: 150px;
+    float: left;
+}
+
+    .componentLink.coalPlant {
+        background-image:url('http://tcktcktck.org/wp-content/uploads/2014/04/Coal-Power-Plants.jpg')
+    }
+
+.panel-heading .btn-group button{
+    float:right;
+}
+
+#coalPlantStatesTable th {
+    max-width: 130px;
+}
+
+#coalPlantStatesTable td {
+    max-width: 130px;
+}
+
+#coalPlantStatesTable input {
+    max-width: 100px;
+}
+
+.placeholder {
+    display:none;
+}
+
+#loadbar{
+    
+    top: 25px;
+    left: 45%;
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    z-index: 99999;
+    background-image: url('images/loading.gif');
+    background-position: center;
+    background-repeat: no-repeat;
+}
