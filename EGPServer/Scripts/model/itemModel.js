@@ -4,7 +4,7 @@
     mada.ItemModel = Backbone.AssociatedModel.extend({
 
         url: function () {
-            return "Handlers/Handler.ashx?entityType=" + this.options.entityType + "&id=" + (this.get("id")||'');
+            return "Handlers/Handler.ashx?entityType=" + this.get("entityType") + "&id=" + (this.get("id")||'');
         },
         parse: function (response) {
 

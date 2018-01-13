@@ -1,6 +1,21 @@
-﻿html, body, #wrapper {
+﻿html, body, #wrapper, div.placeholder {
     height:100%
 }
+
+select {
+    max-width:250px;
+}
+
+.panel-heading h4, h5{
+    text-align:center;
+}
+
+.panel-heading button{
+    float:left;
+}
+
+
+
 
 div.panel {
     height:100%;
@@ -10,7 +25,7 @@ div.panel {
 
 div.map{
     height:100%;
-    min-height:250px;
+    min-height:450px;
 }
 
 #mada {
@@ -19,7 +34,7 @@ div.map{
     background-image: url('Images/mada.png');
     background-repeat:no-repeat;
     background-position:center;
-    opacity:0.2;
+    opacity:0.25;
 }
 
 .panel-heading {
@@ -50,18 +65,6 @@ div.map{
     float:right;
 }
 
-#coalPlantStatesTable th {
-    max-width: 130px;
-}
-
-#coalPlantStatesTable td {
-    max-width: 130px;
-}
-
-#coalPlantStatesTable input {
-    max-width: 100px;
-}
-
 .placeholder {
     display:none;
 }
@@ -78,3 +81,60 @@ div.map{
     background-position: center;
     background-repeat: no-repeat;
 }
+
+
+.dropdown-submenu {
+    position:relative;
+}
+.dropdown-submenu>.dropdown-menu {
+    top:0;
+    left:100%;
+    margin-top:-6px;
+    margin-left:-1px;
+    -webkit-border-radius:0 6px 6px 6px;
+    -moz-border-radius:0 6px 6px 6px;
+    border-radius:0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+    display:block;
+}
+.dropdown-submenu>a:after {
+    display:block;
+    content:" ";
+    float:right;
+    width:0;
+    height:0;
+    border-color:transparent;
+    border-style:solid;
+    border-width:5px 0 5px 5px;
+    border-left-color:#cccccc;
+    margin-top:5px;
+    margin-right:-10px;
+}
+.dropdown-submenu:hover>a:after {
+    border-left-color:#ffffff;
+}
+.dropdown-submenu.pull-left {
+    float:none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+    left:-100%;
+    margin-left:10px;
+    -webkit-border-radius:6px 0 6px 6px;
+    -moz-border-radius:6px 0 6px 6px;
+    border-radius:6px 0 6px 6px;
+}
+
+.modal-header,  .modal-header button{
+    padding:9px 15px;
+    border-bottom:1px solid #eee;
+    color:white;
+    background-color: #0480be;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+     border-top-left-radius: 5px;
+     border-top-right-radius: 5px;
+ }
+

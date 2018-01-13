@@ -64,22 +64,27 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="browserconfig.xml" />
+    <Content Include="Scripts\model\importModel.js" />
+    <Content Include="Scripts\view\importView.js" />
+    <Content Include="Scripts\view\selectItemView.js" />
+    <Content Include="Scripts\view\projectGeneralView.js" />
     <Content Include="Scripts\view\itemCollectionView.js" />
     <Content Include="Scripts\model\itemCollectionModel.js" />
-    <Content Include="Scripts\model\configurationModel.js" />
-    <Content Include="Scripts\view\configurationDetailsView.js" />
+    <Content Include="Scripts\view\projectView.js" />
     <Content Include="Scripts\model\itemModel.js" />
-    <Content Include="Scripts\model\storageModel.js" />
     <Content Include="Scripts\view\madaView.js" />
-    <Content Include="Scripts\model\solarPanelModel.js" />
-    <Content Include="template\configuration.html" />
-    <Content Include="template\configurationDetails.html" />
+    <Content Include="Styles\Images\mada-header.png" />
+    <Content Include="template\itemCollection.html" />
+    <Content Include="template\import.html" />
+    <Content Include="template\selectProject.html" />
+    <Content Include="template\project.html" />
     <Content Include="template\mada.html" />
+    <Content Include="template\solarPanelSupplier.html" />
+    <Content Include="template\storageSupplier.html" />
     <Content Include="template\storage.html" />
     <Content Include="template\solarPanel.html" />
     <Content Include="Styles\Images\mada.png" />
-    <Content Include="template\windTurbineChart.html" />
-    <Content Include="Scripts\model\windTurbineModel.js" />
+    <Content Include="template\windTurbineSupplier.html" />
     <Content Include="Styles\Images\loading.gif" />
     <Content Include="template\windTurbine.html" />
     <Content Include="Content\bootstrap-responsive.css" />
@@ -96,7 +101,7 @@
     <Content Include="Fonts\fontawesome-webfont.svg" />
     <Content Include="Fonts\glyphicons-halflings-regular.svg" />
     <Content Include="index.html" />
-    <Content Include="login.html" />
+    <Content Include="template\login.html" />
     <Content Include="packages.config" />
     <Content Include="Handlers\Handler.ashx" />
     <Content Include="Fonts\glyphicons-halflings-regular.eot" />
@@ -139,7 +144,6 @@
     <Content Include="Content\select2-bootstrap.less" />
     <Content Include="Scripts\Bootstrap\validator.min.js" />
     <Content Include="incrementVer.ps1" />
-    <Content Include="Handler1.ashx" />
     <None Include="Properties\PublishProfiles\Local.pubxml" />
     <None Include="Scripts\JQuery\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\JQuery\jquery-2.1.4.js" />
@@ -187,9 +191,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Handler1.ashx.cs">
-      <DependentUpon>Handler1.ashx</DependentUpon>
-    </Compile>
+    <Compile Include="Handlers\UploadHelper.cs" />
     <Compile Include="Handlers\DBAccess.cs" />
     <Compile Include="Handlers\Handler.ashx.cs">
       <DependentUpon>Handler.ashx</DependentUpon>

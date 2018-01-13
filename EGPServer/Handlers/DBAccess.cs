@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Web;
 
@@ -47,7 +48,7 @@ namespace EGPServer
 
 
 
-        public string getTableAsJson(string sql, KeyValuePair<string, string>[] parameters = null)
+        public string getTableAsJson(string sql, string tableName, string detailsTableName, params KeyValuePair<string, string>[]  parameters)
         {
             SqlConnection conn = GetConnection();
 
@@ -61,7 +62,10 @@ namespace EGPServer
                 {
                     foreach (KeyValuePair<string, string> param in parameters)
                     {
-                        cmd.Parameters.AddWithValue(param.Key, param.Value.Trim());
+                        if (param.Key != null)
+                        {
+                            cmd.Parameters.AddWithValue(param.Key, param.Value.Trim());
+                        }
                     }
                 }
 
@@ -70,6 +74,31 @@ namespace EGPServer
                 DataTable dt = new DataTable();
 
                 adapter.Fill(dt);
+
+                if(! String.IsNullOrEmpty(detailsTableName))
+                {
+                    DataTable dtDetails = new DataTable();
+
+                    string detailsSql =
+                        string.Format("SELECT * FROM {0} where {1} = @id", detailsTableName, tableName + "Id", tableName);
+
+                    cmd.CommandText = detailsSql;
+
+                    cmd.Parameters.Clear();
+
+                    cmd.Parameters.Add(new SqlParameter("id", SqlDbType.Int));
+
+                    dt.Columns.Add(detailsTableName, typeof(DataTable));
+
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        cmd.Parameters[0].Value = Convert.ToInt32(dr[1]);
+
+                        adapter.Fill(dtDetails);
+
+                        dr[detailsTableName] = dtDetails;
+                    }
+                }
 
                 // serialyze to json
 
@@ -87,7 +116,7 @@ namespace EGPServer
             }
         }
 
-        internal int AddComponent(string tableName)
+        internal int AddComponent(string tableName, string parentFieldName, string parentFieldValue)
         {
             SqlConnection conn = GetConnection();
 
@@ -97,8 +126,10 @@ namespace EGPServer
 
             string sql =
                 String.Format(
-                @"INSERT {0}(Name) VALUES('') SELECT IDENT_CURRENT ('{0}')",
-                tableName);
+                @"INSERT {0}(Name {1}) VALUES('' {2}) SELECT IDENT_CURRENT ('{0}')",
+                tableName,
+                String.IsNullOrEmpty( parentFieldName) ? String.Empty : "," + parentFieldName,
+                String.IsNullOrEmpty(parentFieldValue) ? String.Empty : "," + parentFieldValue);
 
             cmd.CommandText = sql;
 
@@ -148,163 +179,83 @@ namespace EGPServer
             }
         }
 
-        internal string GetSolarPanel(int id)
+        internal void ImportWindTurbines(HttpFileCollection files, string parentFieldValue)
         {
-            return GetComponent(id,
-                @"SELECT 
-                    [Id],
-                    [Name],
-                    [Price],
-                    [AnnualMaintenanceCost],
-                    [AnnualOperationalDegradation],
-                    [EnergyProductionCoefficient]
-                FROM [SolarPanel] WHERE id = @id");
+            foreach (string fileName in files)
+            {
+                Stream stream = ((HttpPostedFile)files[fileName]).InputStream;
+                StreamReader streamReader = new StreamReader(stream);
+                string fileContent = streamReader.ReadToEnd();
+                ImportWindTurbineFile(fileName, fileContent, parentFieldValue);
+            }
         }
 
-
-
-        internal string GetCoalPlant(int id)
+        private void ImportWindTurbineFile(string fialeName, string fileContent, string parentFieldValue)
         {
+            string[] lines = fileContent.Split('\n');
+
+            String name = lines[0].Trim().Replace("\"","");
+            float bladeDiameter = float.Parse(lines[1].Trim().Replace("\"", ""));
+            float maxWindVelocity = float.Parse(lines[3].Trim().Replace("\"", ""));
+            float minWindVelocity = float.Parse(lines[4].Trim().Replace("\"", ""));
+
+            List<KeyValuePair<int, float>> powerCurve = new List<KeyValuePair<int, float>>();
+
+            for (int i = 5; i < lines.Length; i++)
+            {
+                float power = 0;
+                if (float.TryParse(lines[i].Trim().Replace("\"", ""), out power))
+                {
+                    powerCurve.Add(new KeyValuePair<int, float>(i - 4, power));
+                }
+            }
+
             SqlConnection conn = GetConnection();
 
-            try
+            SqlCommand cmd = new SqlCommand();
+
+
+            string sql =
+                @"
+                IF NOT EXISTS(SELECT 1 FROM WindTurbine where name = @name)
+                
+                INSERT WindTurbine(Name, MinWindVelocity, MaxWindVelocity, BladeDiameter, WindTurbineSupplierId) 
+                VALUES(@name, @minWindVelocity, @maxWindVelocity, @bladeDiameter, @windTurbineSupplierId)
+
+                DELETE WindTurbinePowerCurve WHERE WindTurbineId = (SELECT id FROM WindTurbine WHERE name = @name)
+
+                UPDATE WindTurbine 
+                SET Name = @name, MinWindVelocity = @minWindVelocity, 
+                    MaxWindVelocity = @maxWindVelocity, BladeDiameter = @bladeDiameter
+                WHERE name = @name";
+
+
+            cmd.CommandText = sql;
+            cmd.Connection = conn;
+
+            cmd.Parameters.AddWithValue("name", name);
+            cmd.Parameters.AddWithValue("minWindVelocity", minWindVelocity);
+            cmd.Parameters.AddWithValue("maxWindVelocity", maxWindVelocity);
+            cmd.Parameters.AddWithValue("bladeDiameter", bladeDiameter);
+            cmd.Parameters.AddWithValue("windTurbineSupplierId", parentFieldValue);
+
+            cmd.ExecuteNonQuery();
+
+            for (int i = 0; i < powerCurve.Count; i++)
             {
+                sql = @"
+                INSERT WindTurbinePowerCurve(WindTurbineId, WindVelocity, Power)
+                VALUES((select id from WindTurbine where name = @name), @WindVelocity, @power)";
 
-                string sql = 
-                    @"
-                    SELECT id, Name, Capacity 
-                    FROM CoalPlant 
-                    WHERE id = @id";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-
-                cmd.Parameters.AddWithValue("id", id);
-
-                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-
-                DataTable dt = new DataTable();
-
-                adapter.Fill(dt);
-
-                // add states 
-
-                dt.Columns.Add("States", typeof(DataTable));
-
-                sql =
-                    @"select 
-                    s.id,
-                    CoalPlantId,
-                    m.Id CoalPlantOperationModeId,
-                    m.Value CoalPlantOperationModeName,
-                    s.CoalBurningPercentage,
-                    s.MinutesToFullLoad,
-                    s.EmissionPercentage,
-                    s.CostPerHourPercentage
-                    from CoalPlantOperationMode m
-                    left join CoalPlantState s on s.CoalPlantOperationModeId = m.Id
-                    and s.CoalPlantId = @id
-                    order by m.ord";
+                cmd.Parameters.Clear();
 
                 cmd.CommandText = sql;
 
-                DataTable dt1 = new DataTable();
+                cmd.Parameters.AddWithValue("name", name);
+                cmd.Parameters.AddWithValue("WindVelocity", powerCurve[i].Key);
+                cmd.Parameters.AddWithValue("power", powerCurve[i].Value);
 
-                adapter = new SqlDataAdapter(cmd);
-
-                adapter.Fill(dt1);
-
-                dt.Rows[0]["States"] = dt1;
-
-                // serialyze to json
-
-                string json = Newtonsoft.Json.JsonConvert.SerializeObject(dt, Formatting.Indented);
-
-                return json;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                conn.Close();
-            }
-        }
-
-        internal string GetWindTurbine(int id)
-        {
-            SqlConnection conn = GetConnection();
-
-            try
-            {
-
-                string sql =
-                    @"
-                    SELECT * 
-                    FROM WindTurbine                    WHERE id = @id";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-
-                cmd.Parameters.AddWithValue("id", id);
-
-                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-
-                DataTable dt = new DataTable();
-
-                adapter.Fill(dt);
-
-                // serialyze to json
-
-                string json = Newtonsoft.Json.JsonConvert.SerializeObject(dt, Formatting.Indented);
-
-                return json;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                conn.Close();
-            }
-        }
-
-
-        internal string GetStorage(int id)
-        {
-            SqlConnection conn = GetConnection();
-
-            try
-            {
-
-                string sql =
-                    @"
-                    SELECT * 
-                    FROM Storage  WHERE id = @id";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-
-                cmd.Parameters.AddWithValue("id", id);
-
-                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-
-                DataTable dt = new DataTable();
-
-                adapter.Fill(dt);
-
-                // serialyze to json
-
-                string json = Newtonsoft.Json.JsonConvert.SerializeObject(dt, Formatting.Indented);
-
-                return json;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                conn.Close();
+                cmd.ExecuteNonQuery();
             }
         }
 
@@ -316,12 +267,17 @@ namespace EGPServer
 
             cmd.Connection = conn;
 
-            dynamic componenet = Newtonsoft.Json.JsonConvert.DeserializeObject(data);
+            dynamic component = Newtonsoft.Json.JsonConvert.DeserializeObject(data);
 
             string set = String.Empty;
 
-            foreach (var item in componenet)
+            foreach (var item in component)
             {
+                if (item.Name == "id" || item.Name == "entityType" || item.Name == "Type" || item.Name == "UserId")
+                    continue;
+                if (set.Length > 0)
+                    set += ", ";
+
                 set += item.Name + "= @" + item.Name;
 
                 cmd.Parameters.AddWithValue("@" + item.Name, item.Value.Value);

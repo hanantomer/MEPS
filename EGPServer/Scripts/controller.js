@@ -27,17 +27,15 @@ $(document).ready(function () {
 
             initialize: function () {
 
-                _.bindAll(this, 'showConfigurationDetails');
+                mada.router = mada.setRouter();
 
-                this.loadHtmlFile("login.html", $("#login"));
+                this.loadHtmlFile("template/login.html", $("#login"));
+
+                this.loadHtmlFile("template/project.html", $("#project"));
 
                 this.initModels();
 
                 this.initViews();
-
-                this.startListening();
-
-                this.router = mada.setRouter();
 
                 this.showMada();
 
@@ -55,7 +53,7 @@ $(document).ready(function () {
             },
 
 
-            showLoginPage: function() {
+            showLoginPage: function () {
                 $("#login").modal();
             },
 
@@ -70,84 +68,125 @@ $(document).ready(function () {
 
             initModels: function () {
 
-                mada.solarPanelCollectionModel = new mada.ItemCollectionModel(
-                        null,
-                        {
-                            url: "Handlers/handler.ashx?entityType=SolarPanels",
-                            model: mada.SolarPanelModel
-                        });
+                mada.projectModel = new mada.ItemModel(
+                null,
+                {
+                    url: "Handlers/handler.ashx?entityType=project"
+                });
 
-                mada.windTurbineCollectionModel = new mada.ItemCollectionModel(
-                    null,
-                    {
-                        url: "Handlers/handler.ashx?entityType=WindTurbines",
-                        model: mada.WindTurbineModel
-                    });
-
-                mada.storageCollectionModel = new mada.ItemCollectionModel(
-                    null,
-                    {
-                        url: "Handlers/handler.ashx?entityType=StorageTypes",
-                        model: mada.StorageModel
-                    });
-
-                mada.configurationCollectionModel = new mada.ItemCollectionModel(
-                    null,
-                    {
-                        url: "Handlers/handler.ashx?entityType=Configurations",
-                        model: mada.ConfigurationModel
-                    });
             },
 
             initViews: function () {
 
+                mada.solarPanelSupplierCollectionView =
+                    new mada.ItemCollectionView(
+                        {
+                            model: new mada.ItemCollectionModel(null, { entityType: "solarPanelSupplier" }),
+                            el: "#items",
+                            title: "Solar Panel Suplliers"
+                        });
+
+
                 mada.solarPanelCollectionView =
                     new mada.ItemCollectionView(
                         {
-                            model: mada.solarPanelCollectionModel,
+                            model: new mada.ItemCollectionModel(null, { entityType: "solarPanel" }),
                             el: "#items",
-                            itemTitle: "Solar Panel Types",
-                            itemType: "solarPanel",
-                            showDetails: this.showSolarPanel
+                            title: "Solar Panel Types",
+                            parentElement: {
+                                label: "Supplier",
+                                dataField: "SolarPanelSupplierId",
+                                parentTable: "SolarPanelSupplier",
+                                changeCallback: "parentChanged"
+                            }
                         });
+
+                mada.windTurbineSupplierCollectionView =
+                    new mada.ItemCollectionView(
+                        {
+                            model: new mada.ItemCollectionModel(null, {
+                                entityType: "windTurbineSupplier"
+                            }),
+                            el: "#items",
+                            title: "Wind Turbine Suppliers"
+                        });
+
 
                 mada.windTurbineCollectionView =
                     new mada.ItemCollectionView(
                         {
-                            model: mada.windTurbineCollectionModel,
+                            model: new mada.ItemCollectionModel(null, {
+                                entityType: "windTurbine",
+                                detailsTableName: "WindTurbinePowerCurve"
+                            }),
                             el: "#items",
-                            itemTitle: "Wind Turbine Types",
-                            itemType: "windTurbine",
-                            showDetails: this.showWindTurbine
+                            title: "Wind Turbine Types",
+                            hasImport: "true",
+                            postRender: this.showWindTurbineChart,
+                            parentElement: {
+                                label: "Supplier",
+                                dataField: "windTurbineSupplierId",
+                                parentTable: "WindTurbineSupplier",
+                                changeCallback: "parentChanged"
+                            }
                         });
+
+                mada.storageSupplierCollectionView =
+                  new mada.ItemCollectionView(
+                      {
+                          model: new mada.ItemCollectionModel(null, { entityType: "storageSupplier" }),
+                          el: "#items",
+                          title: "Storage Suppliers"
+                      });
+
 
                 mada.storageCollectionView =
                   new mada.ItemCollectionView(
                       {
-                          model: mada.storageCollectionModel,
+                          model: new mada.ItemCollectionModel(null, { entityType: "storage" }),
                           el: "#items",
-                          itemTitle: "Storage Types",
-                          itemType: "storage",
-                          showDetails: this.showStorage
+                          title: "Storage Types",
+                          parentElement: {
+                              label: "Supplier",
+                              dataField: "storageSupplierId",
+                              parentTable: "StorageSupplier",
+                              changeCallback: "parentChanged"
+                          },
                       });
 
-
-                mada.configurationCollectionView =
-                    new mada.ItemCollectionView(
+                mada.importWindTurbineTypesDialogView =
+                    new mada.ImportView(
                         {
-                            model: mada.configurationCollectionModel,
-                            el: "#items",
-                            itemTitle: "Grid Setup",
-                            itemType: "configuration",
-                            showItemCallback: mada.initMap,
-                            showDetails: this.showConfigurationDetails
+                            model: new mada.ImportModel(null, { entityType: "importWindTurbines" }),
+                            templateName: "import",
+                            el: "#import",
+                            title: "Import"
                         });
 
-                mada.configurationDetailsView =
-                    new mada.ConfigurationDetailsView({
-                        model: mada.configurationModel,
-                        el: "#itemDetails"
+                mada.selectProjectDialogView =
+                    new mada.SelectItemView(
+                        {
+                            templateName: "selectProject",
+                            model: new mada.ItemCollectionModel(null, { entityType: "project" }),
+                            el: "#selectItem",
+                            title: "Please select a project",
+                            onSelect: function (id) {
+                                mada.router.navigate("#openProject/" + id, { trigger: true });
+                            }
+                        });
+
+                mada.projectView =
+                    new mada.ProjectView({
+                        model: mada.projectModel,
+                        el: "#projectPanel"
                     });
+
+                mada.projectGeneralView =
+                 new mada.ProjectGeneralView({
+                     model: mada.projectModel,
+                     el: "#projectGeneral"
+                 });
+
 
                 mada.madaView =
                     new mada.MadaView({
@@ -155,37 +194,20 @@ $(document).ready(function () {
                     });
             },
 
-            /*Listen to events raised by views*/
-            startListening: function () {
-
-                // Menu events
-
-                this.listenTo(this, 'loginRoute', this.login);
-                this.listenTo(this, 'configurationCollectionRoute', this.showConfigurationCollection);
-                this.listenTo(this, 'solarPanelCollectionRoute', this.showSolarPanelCollection);
-                this.listenTo(this, 'windTurbineCollectionRoute', this.showWindTurbineCollection);
-                this.listenTo(this, 'storageRoute', this.showStorage);
-                this.listenTo(this, 'madaRoute', this.showMada);
-
-                
-
-                // add component
-                $("#btnAddComponent").click(function () {
-                    mada.controller.addItem();
-                });
-            },
-
-            addItem: function() {
-
-                this.lastView.addItem();
-            },
 
             login: function (userName, passWord) {
 
                 $("#login").modal('hide');
             },
 
-            showSolarPanelCollection: function () {
+            settingsSolarPanelSuppliers: function () {
+
+                this.hidePlacholders();
+
+                mada.solarPanelSupplierCollectionView.render();
+            },
+
+            settingsSolarPanels: function () {
 
                 this.hidePlacholders();
 
@@ -194,7 +216,16 @@ $(document).ready(function () {
                 this.lastView = mada.solarPanelCollectionView;
             },
 
-            showWindTurbineCollection: function () {
+            settingsWindTurbineSuppliers: function () {
+
+                this.hidePlacholders();
+
+                mada.windTurbineSupplierCollectionView.render();
+
+                this.lastView = mada.windTurbineSupplierCollectionView;
+            },
+
+            settingsWindTurbines: function () {
 
                 this.hidePlacholders();
 
@@ -203,7 +234,18 @@ $(document).ready(function () {
                 this.lastView = mada.windTurbineCollectionView;
             },
 
-            showStorage: function () {
+            settingsStorageSuppliers: function () {
+
+                this.hidePlacholders();
+
+                mada.storageSupplierCollectionView.render();
+
+                this.lastView = mada.storageSupplierCollectionView;
+            },
+
+
+
+            settingsStorage: function () {
 
                 this.hidePlacholders();
 
@@ -212,23 +254,69 @@ $(document).ready(function () {
                 this.lastView = mada.storageCollectionView;
             },
 
-            showConfigurationCollection: function () {
+            import: function (parentParam) {
+
+                if (parentParam.parentFieldName == "windTurbineSupplierId") {
+                    mada.importWindTurbineTypesDialogView.render(parentParam.parentFieldValue);
+                }
+            },
+
+
+            selectProject: function () {
+
+                mada.selectProjectDialogView.render();
+            },
+
+            openProject: function (params) {
+
+                var id = params[0];
 
                 this.hidePlacholders();
 
-                mada.configurationCollectionView.render();
+                mada.projectView.render(id);
 
-                this.lastView = mada.configurationCollectionView;
             },
 
-            showConfigurationDetails: function (configurationModel) {
+            openProjectGeneral: function (params) {
 
-                this.hidePlacholders();
+                var id = params[1];
 
-                mada.configurationDetailsView.render(configurationModel);
-
-                this.lastView = mada.configurationDetailsView;
+                mada.projectGeneralView.render(id);
             },
+
+            showWindTurbineChart: function (model, viewEl, id) {
+
+                var chartContainer =
+                   viewEl.find("[data-id='" + id + "']").find("div[name='windTurbineChart']");
+
+                var data = [];
+
+                $.each(model.get("WindTurbinePowerCurve"), function (i, e) {
+
+                    data.push({ y: e.WindVelocity, a: e.Power });
+                });
+
+                
+
+                //if (viewEl.windTurbineChartObject == null) {
+
+                  //  viewEl.windTurbineChartObject =
+
+                        Morris.Line({
+                            element: chartContainer,
+                            data: data,
+                            xkey: 'y',
+                            ykeys: ['a'],
+                            labels: [''],
+                            parseTime: false
+                        });
+                //}
+                //else {
+                //    viewEl.windTurbineChartObject.setData(data);
+                //}
+            },
+
+
 
             showMada: function () {
 

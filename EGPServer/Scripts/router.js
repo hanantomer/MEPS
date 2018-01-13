@@ -6,60 +6,60 @@
         var Router = Backbone.Router.extend({
  
             routes: {
-                'login': 'loginRoute',
-                'configurations': 'configurationCollectionRoute',
-                'solarPanels': 'solarPanelCollectionRoute',
-                'windTurbines': 'windTurbineCollectionRoute',
-                'storage': 'storageRoute',
-                'general': 'generalRoute',
-                'windData': 'windDataRoute',
-                'sunData': 'sunDataRoute',
-                'demandData': 'demandDataRoute',
+                'login': 'login',
+                'newProject': 'newProjectRoute',
+                'selectProject': 'invokeControllerFunction',
+                'openProject/:id': 'invokeControllerFunction',
+                'openProjectGeneral/:id': 'invokeControllerFunction',
+                'projectPowerUnits/:id': 'invokeControllerFunction',
+                'projectWindData/:id': 'invokeControllerFunction',
+                'projectSunData/:id': 'invokeControllerFunction',
+                'projectDemandData/:id': 'invokeControllerFunction',
+                'settingsSolarPanels': 'invokeControllerFunction',
+                'settingsWindTurbines': 'invokeControllerFunction',
+                'settingsStorage': 'invokeControllerFunction',
+                'settingsSolarPanelSuppliers': 'invokeControllerFunction',
+                'settingsWindTurbineSuppliers': 'invokeControllerFunction',
+                'settingsStorageSuppliers': 'invokeControllerFunction',
+                'importWindTurbineTypes': 'invokeControllerFunction',
                 '*path': 'madaRoute'
             },
+
+            invokeControllerFunction: function () {
  
-            invokeControllerTrigger: function (triggerName) {
  
-                var params = [];
- 
-                params.push(triggerName);
- 
-                for (var i = 1; i < arguments.length; i++) {
-                    params.push(arguments[i]);
+                var routeName = Backbone.history.getFragment(); // route name should match a controller function
+
+                var functionNameToInvoke = routeName;
+
+                var id;
+
+                if (routeName.indexOf('/') > 0) {
+
+                    functionNameToInvoke = routeName.substr(0, routeName.indexOf('/'));
+                    id = routeName.substr(routeName.indexOf('/') + 1);
                 }
- 
-                mada.controller.trigger(triggerName, params);
+
+                if (functionNameToInvoke && mada.controller[functionNameToInvoke]) {
+                    mada.controller[functionNameToInvoke].call(mada.controller, id);
+                }
             },
 
             loginRoute: function () {
 
-                this.invokeControllerTrigger("loginRoute");
+                this.invokeControllerFunction("loginRoute");
             },
 
-            solarPanelCollectionRoute: function () {
+            newProjectRoute: function (e) {
 
-                this.invokeControllerTrigger("solarPanelCollectionRoute");
+                this.invokeControllerFunction("newProjectRoute", e);
             },
 
-            windTurbineCollectionRoute: function () {
-
-                this.invokeControllerTrigger("windTurbineCollectionRoute");
-            },
-
-            storageRoute: function () {
-
-                this.invokeControllerTrigger("storageRoute");
-            },
-
-            configurationCollectionRoute: function () {
- 
-                this.invokeControllerTrigger("configurationCollectionRoute");
-            },
-
+          
             madaRoute: function () {
 
-                this.invokeControllerTrigger("madaRoute");
-            },
+                this.invokeControllerFunction("madaRoute");
+            }
         });
 
         return new Router();

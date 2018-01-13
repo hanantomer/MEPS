@@ -3,11 +3,8 @@
         <div class="row">
             <h5 class="col-xs-6">Wind Turbine</h5>
             <div class="col-xs-6 btn-group">
-                <button class="btn btn-mini" title="remove" name="remove">
+                <button class="btn btn-mini btn-danger" title="remove" name="remove">
                     <span class="fa fa-trash"></span>
-                </button>
-                <button class="btn btn-mini" title="details" name="details">
-                    <span class="fa fa-info"></span>
                 </button>
             </div>
         </div>
@@ -18,20 +15,20 @@
             <input class="form-control" type="text" name="ComponentName" data-field="Name" />
         </div>
         <div class="form-group ">
-            <label>Min Capacity(MW)</label>
-            <input class="form-control" type="number" name="MinCapacity" data-field="MinCapacity" maxlength="5" />
+            <label>Blade Diameter:</label>
+            <input class="form-control" type="text" name="BladeDiameter" data-field="BladeDiameter" />
         </div>
         <div class="form-group ">
-            <label>Min Wind Velocity</label>
+            <label>Min Wind Velocity(m/s)</label>
             <input class="form-control" type="number" name="MinWindVelocity" data-field="MinWindVelocity" maxlength="5" />
         </div>
         <div class="form-group ">
-            <label>Max Capacity(MW)</label>
-            <input class="form-control" type="number" name="MaxCapacity" data-field="MaxCapacity" maxlength="5" />
-        </div>
-        <div class="form-group ">
-            <label>Max Wind Velocity</label>
+            <label>Max Wind Velocity(m/s)</label>
             <input class="form-control" type="number" name="MaxWindVelocity" data-field="MaxWindVelocity" maxlength="5" />
+        </div>
+        <div class="form-group">
+            <label>wind/power curve</label>
+            <div style="min-height:220px;width:100%" name="windTurbineChart"></div>
         </div>
     </div>
 </div>

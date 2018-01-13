@@ -2,14 +2,35 @@
 
     mada.ItemCollectionModel = Backbone.Collection.extend({
 
-        initialize: function(attributes, options) {
-            this.url = options.url;
-            this.model = options.model;
+        initialize: function (attributes, options) {
+
+            this.model = options.model || mada.ItemModel;
+
+            mada.assert(options.entityType != null);
+
+            this.entityType = options.entityType;
+
+            this.detailsTableName = options.detailsTableName;
+
+            _.bindAll(this, 'addItem');
         },
 
-        addItem: function (type, errorCallback, successCallback) {
+        url: function () {
+            return "Handlers/Handler.ashx?entityType=" +
+                this.entityType + "&detailsTableName=" +
+                (this.detailsTableName || '');
+        },
+
+        addItem: function (type, parentFieldName, parentFieldValue, errorCallback, successCallback) {
 
             var model = new this.model();
+            model.set("entityType", this.entityType);
+
+            if (parentFieldName != null)
+            {
+                model.set("parentFieldName", parentFieldName);
+                model.set("parentFieldValue", parentFieldValue);
+            }
 
             var options = {};
 
@@ -19,16 +40,16 @@
             model.save(null, options);
         },
 
-        removeItem: function (type, id, successCallback) {
+        removeItem: function (id, successCallback) {
 
-            var model = this.getItem(id, type);
+            var model = this.getItem(id);
 
             model.destroy({success: successCallback});
         },
 
-        updateItem: function (type, id, attrs) {
+        updateItem: function (id, attrs) {
 
-            var model = this.getItem(id, type);
+            var model = this.getItem(id);
 
             $.each(attrs, function (i, e) {
                 model.set(e.name, e.value);
@@ -45,9 +66,9 @@
                 });
         },
 
-        getItem: function (id, type) {
+        getItem: function (id) {
 
-            var model = this.findWhere({ "id": id });
+            var model = this.findWhere({ "id": parseInt(id) });
 
             model.set("id", id);
 

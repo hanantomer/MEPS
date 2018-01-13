@@ -14,6 +14,14 @@ namespace EGPServer
         {
             string entityType = context.Request.Params["entityType"];
 
+            string parentFieldName = context.Request.Params["parentFieldName"];
+
+            string parentFieldValue = context.Request.Params["parentFieldValue"];
+
+            string detailsTableName = context.Request.Params["detailsTableName"];
+
+            bool select2 = context.Request.Params["select2"] != null; 
+
             if (string.IsNullOrEmpty(entityType))
             {
                 throw new ArgumentNullException("Handler must be supplied with a request parameter named : entityType");
@@ -34,7 +42,7 @@ namespace EGPServer
                 "DELETE" :
                 context.Request.RequestType == "GET" ?
                 "GET" :
-                context.Request.RequestType == "POST" ?
+                context.Request.RequestType == "POST" || context.Request.RequestType == "PATCH" ?
                 "PUT" :
                 context.Request.Form["_method"];
 
@@ -42,231 +50,13 @@ namespace EGPServer
 
             DBAccess db = DBAccess.GetInstance();
 
-            if (entityType == "SolarPanels")
+            if (requestType == "GET")
             {
-                if (requestType == "GET")
-                {
-                    result =
-                        db.getTableAsJson(
-                            @"
-                            SELECT 
-                            [id],
-                            [Name],
-                            [Price],
-                            [AnnualMaintenanceCost],
-                            [AnnualOperationalDegradation],
-                            [EnergyProductionCoefficient],
-                            'solarPanel' Type  
-                            FROM SolarPanel");
-                }
+                result = ProcessGetRequest(entityType, id, select2, parentFieldName, parentFieldValue, detailsTableName);
             }
-
-            if (entityType == "WindTurbines")
+            else
             {
-                result =
-                    db.getTableAsJson(
-                        @"select id, Name, 
-                        MinWindVelocity, 
-                        MaxWindVelocity, 
-                        MinCapacity, 
-                        MaxCapacity, 
-                        'windTurbine' Type  from WindTurbine");
-            }
-
-            if (entityType == "Configurations")
-            {
-                result =
-                    db.getTableAsJson(
-                        @"select id, Name, Place,
-                        'configuration' Type  from Configuration");
-            }
-
-
-            if (entityType == "StorageTypes")
-            {
-                if (requestType == "GET")
-                {
-                    result =
-                        db.getTableAsJson(
-                            @"
-                            SELECT [id]
-                                  ,[Name]
-                                  ,[Price]
-                                  ,[MaxCapacity]
-                                  ,[BatteryCapacity]
-                                  ,[BatteryPower]
-                                  ,[ChargeRate]
-                                  ,[DischargeRate]
-                                  ,[Efficiency]
-                                  ,[AnnualyEfficiencyLoss]
-                                  ,[Cycles]
-                                  , 'storage'   Type
-                              FROM [dbo].[Storage]");
-                }
-            }
-
-
-            if (entityType == "coalPlantOperationModes")
-            {
-                if (requestType == "GET")
-                {
-                    result =
-                        db.getTableAsJson("select id, Value as text from CoalPlantOperationMode");
-                }
-            }
-
-            if (entityType == "coalPlant")
-            {
-                if (requestType == "GET")
-                {
-                    result =
-                        db.GetCoalPlant(Convert.ToInt32(id));
-                }
-
-                if (requestType == "PUT")
-                {
-                    // add
-                    if (String.IsNullOrEmpty(id))
-                    {
-                        int coalPlantId = db.AddComponent("CoalPlant");
-
-                        result =
-                            db.getTableAsJson("select * from CoalPlant where id = @id",
-                                new KeyValuePair<string, string>[] {
-                                    new KeyValuePair<string, string>(
-                                        "id", coalPlantId.ToString())});
-                    }
-                    else
-                    {
-
-                        db.UpdateComponent(Convert.ToInt32(id), data, "CoalPlant");
-                    }
-                }
-
-                if (requestType == "DELETE")
-                {
-                    db.DeleteComponent(id, "CoalPlant");
-                }
-            }
-
-            if (entityType == "coalPlantState")
-            {
-
-                if (requestType == "PUT")
-                {
-                    db.UpdateCoalPlantState(data);
-                }
-            }
-
-
-            if (entityType == "solarPanel")
-            {
-                if (requestType == "GET")
-                {
-                    result =
-                        db.GetSolarPanel(Convert.ToInt32(id));
-                }
-
-                if (requestType == "PUT")
-                {
-                    // add
-                    if (String.IsNullOrEmpty(id))
-                    {
-                        int solarPanelId = db.AddComponent("SolarPanel");
-
-                        result =
-                            db.getTableAsJson("SELECT * from SolarPanel WHERE id = @id",
-                                new KeyValuePair<string, string>[] {
-                                    new KeyValuePair<string, string>(
-                                        "id", solarPanelId.ToString())});
-                    }
-                    else
-                    {
-
-                        db.UpdateComponent(Convert.ToInt32(id), data, "SolarPanel");
-                    }
-                }
-
-                if (requestType == "DELETE")
-                {
-                    db.DeleteComponent(id, "SolarPanel");
-                }
-            }
-
-
-
-            if (entityType == "windTurbine")
-            {
-                if (requestType == "GET")
-                {
-                    result =
-                        db.GetWindTurbine(Convert.ToInt32(id));
-                }
-
-                if (requestType == "PUT")
-                {
-                    // add
-                    if (String.IsNullOrEmpty(id))
-                    {
-                        int windTurbineid = db.AddComponent("WindTurbine");
-
-                        result =
-                            db.getTableAsJson("select * from WindTurbine where id = @id",
-                                new KeyValuePair<string, string>[] {
-                                    new KeyValuePair<string, string>(
-                                        "id", windTurbineid.ToString())});
-                    }
-                    else
-                    {
-
-                        db.UpdateComponent(Convert.ToInt32(id), data, "WindTurbine");
-                    }
-                }
-
-                if (requestType == "DELETE")
-                {
-                    db.DeleteComponent(id, "WindTurbine");
-                }
-            }
-
-            if (entityType == "storage")
-            {
-                if (requestType == "GET")
-                {
-                    result =
-                        db.GetStorage(Convert.ToInt32(id));
-                }
-
-                if (requestType == "PUT")
-                {
-                    // add
-                    if (String.IsNullOrEmpty(id))
-                    {
-                        int storageId = db.AddComponent("Storage");
-
-                        result =
-                            db.getTableAsJson("SELECT * from Storage WHERE id = @id",
-                                new KeyValuePair<string, string>[] {
-                                    new KeyValuePair<string, string>(
-                                        "id", storageId.ToString())});
-                    }
-                    else
-                    {
-
-                        db.UpdateComponent(Convert.ToInt32(id), data, "Storage");
-                    }
-                }
-
-                if (requestType == "DELETE")
-                {
-                    db.DeleteComponent(id, "Storage");
-                }
-            }
-
-            if (entityType == "configuration")
-            {
-                ProcessItemRequest(requestType, "configuration", id, data, out result);
-
+                result = ProcessPostRequest(requestType, entityType, id, data, context.Request.Files, parentFieldValue);
             }
 
 
@@ -275,43 +65,127 @@ namespace EGPServer
             context.Response.Write(result);
         }
 
-        private void  ProcessItemRequest(String requestType, String itemType, String id, String data, out String result)
+        private string  ProcessPostRequest(String requestType, String itemType, String id, String data, HttpFileCollection files, string parentFieldValue)
         {
             DBAccess db = DBAccess.GetInstance();
 
-            result = "[]";
-
-            if (requestType == "GET")
-            {
-                result =
-                    db.GetStorage(Convert.ToInt32(id));
-            }
+            String result = "[]";
 
             if (requestType == "PUT")
             {
-                // add
-                if (String.IsNullOrEmpty(id))
+                if (itemType == "importWindTurbines")
                 {
-                    int newId = db.AddComponent(itemType);
-
-                    result =
-                        db.getTableAsJson(String.Format("SELECT * from {0} WHERE id = @id", itemType),
-                            new KeyValuePair<string, string>[] {
-                                    new KeyValuePair<string, string>(
-                                        "id", newId.ToString())});
+                    db.ImportWindTurbines(files, parentFieldValue);
                 }
+
                 else
                 {
+                    // add
+                    if (String.IsNullOrEmpty(id))
+                    {
 
-                    db.UpdateComponent(Convert.ToInt32(id), data, itemType);
+                        string parentFieldName = null;
+
+                        dynamic component = Newtonsoft.Json.JsonConvert.DeserializeObject(data);
+
+                        foreach (var item in component)
+                        {
+                            if (item.Name == "parentFieldName")
+                            {
+
+                                parentFieldName = item.Value.Value;
+                            }
+
+                            if (item.Name == "parentFieldValue")
+                            {
+
+                                parentFieldValue = item.Value.Value;
+                            }
+                        }
+
+
+                        int newId = db.AddComponent(itemType, parentFieldName, parentFieldValue);
+
+                        result =
+                            db.getTableAsJson(
+                                String.Format("SELECT * from {0} WHERE id = @id", itemType),
+                                "",
+                                "",
+                                new KeyValuePair<string, string>[] {
+                                    new KeyValuePair<string, string>(
+                                        "id", newId.ToString())});
+                    }
+                    else
+                    {
+
+                        db.UpdateComponent(Convert.ToInt32(id), data, itemType);
+                    }
                 }
             }
 
             if (requestType == "DELETE")
             {
-                db.DeleteComponent(id, "Storage");
+                db.DeleteComponent(id, itemType);
+            }
+
+            return result;
+        }
+
+        private string ProcessGetRequest(String entityType, String id, bool select2, string parentFieldName, string parentFieldValue, string detailsTableName)
+        {
+            if (entityType.ToLower().StartsWith("sys"))
+                return null;
+
+            ///TODO assert valid table name to avoid injection
+
+
+            KeyValuePair<String, String> prmId = new KeyValuePair<string, string>();
+            KeyValuePair<String, String> prmParent = new KeyValuePair<string, string>();
+
+            if (!String.IsNullOrEmpty(id))
+            {
+                prmId = new KeyValuePair<String, String>("id", id);
+            }
+
+
+            DBAccess db = DBAccess.GetInstance();
+
+            String where =
+                String.IsNullOrEmpty(id) ? "" : " AND id=@id ";
+
+
+            string parentWhere = "";
+
+            if(!String.IsNullOrEmpty(parentFieldName))
+            {
+                parentWhere = String.Format(" AND {0}=@{0} ", parentFieldName);
+                prmParent = new KeyValuePair<String, String>(parentFieldName, parentFieldValue);
+            }
+
+            if(select2)
+            {
+                string results =
+                    db.getTableAsJson(
+                        String.Format("SELECT id, name as text from {0} WHERE 1=1 {1} ", entityType, parentWhere), 
+                        "",
+                        "",
+                        prmId, 
+                        prmParent);
+
+                results = String.Format("{0}\"results\":{1} {2}", "{", results, "}");
+                return results;
+            }
+            else
+            {
+                return db.getTableAsJson(
+                    String.Format("SELECT '{0}' as entityType, * from {0} WHERE 1=1 {1} {2}  ", entityType, where, parentWhere),
+                    entityType,
+                    detailsTableName,
+                    prmId, 
+                    prmParent);
             }
         }
+
 
         public bool IsReusable
         {

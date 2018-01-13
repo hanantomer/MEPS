@@ -33,10 +33,11 @@
     <!-- Custom Fonts -->
     <link href="Styles/font-awesome.min.css" rel="stylesheet">
 
-    <link href="Styles/bootstrap-select.min.css" rel="stylesheet" />
+    <!--<link href="Styles/bootstrap-select.min.css" rel="stylesheet" />-->
 
 
-    <link href="Content/css/select2.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+
     <link href="Content/select2-bootstrap.css" rel="stylesheet" />
 
 
@@ -51,82 +52,80 @@
 </head>
 
 <body>
-
     <div id="wrapper">
-        <!-- Navigation -->
-        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="index.html">Mada MEPS</a>
-            </div>
-            <!-- /.navbar-header -->
-
-            <ul class="nav navbar-top-links navbar-right">
-                <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                        <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
+        <nav class="navbar navbar-default navbar-inverse">
+            <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">
+                        <img alt="Brand" src="Styles/Images/mada-header.png">
                     </a>
-                    <ul class="dropdown-menu dropdown-user">
-                        <li>
-                            <a href="index.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
-                        </li>
-                    </ul>
-                    <!-- /.dropdown-user -->
-                </li>
-                <!-- /.dropdown -->
-            </ul>
-            <!-- /.navbar-top-links -->
+                    <h4 class="navbar-text">Mada MEPS</h4>
+                    
+                </div>
 
-            <div class="navbar-default sidebar" role="navigation">
-                <div class="sidebar-nav navbar-collapse">
-                    <ul class="nav" id="side-menu">
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Components <span class="caret"></span></a>
-                            <ul class="nav nav-second-level">
-                                <li><a href="#solarPanels">Solar Panel Types</a></li>
-                                <li><a href="#windTurbines">Wind Turbine Types</a></li>
-                                <li><a href="#storage">Storage Types</a></li>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown dropdown-submenu"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Suppliers<span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#settingsSolarPanelSuppliers">Solar Panel Suppliers</a></li>
+                                        <li><a href="#settingsWindTurbineSuppliers">Wind Turbine Suppliers</a></li>
+                                        <li><a href="#settingsStorageSuppliers">Storage Suppliers</a></li>
+                                    </ul>
+                                </li>
+                                <li class="divider"></li>
+                                <li><a href="#settingsSolarPanels">Solar Panel Types</a></li>
+                                <li><a href="#settingsWindTurbines">Wind Turbine Types</a></li>
+                                <li><a href="#settingsStorage">Storage Types</a></li>
                             </ul>
                         </li>
-                        <li><a href="#configurations">Grid Setup List</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Project <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#newProject">New</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="#selectProject">Open</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="#exit">Exit</a></li>
+                            </ul>
+                        </li>
                     </ul>
-                </div>
-                <!-- /.sidebar-collapse -->
-            </div>
-            <!-- /.navbar-static-side -->
+                </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
         </nav>
 
-        <div id="page-wrapper">
-            <div id="mada" class="placeholder panel"></div>
-            <div id="items" class="placeholder">
-                <div class="panel-heading">
-                    <button id="btnAddComponent" type="button" class="btn btn-default">
-                        <i class="fa fa-plus-circle"></i> Add
-                    </button>
-                </div>
-                <hr />
-                <div id="itemsList" class="panel-body panel-default">
-                    <ul class="list-inline">
-                        <li></li>
-                    </ul>
-                </div>
-            </div>
+        <div id="items" class="placeholder panel panel-yellow">
             
-            <div id="itemDetails" class="placeholder">
+        </div>
+
+        <div id="mada" class="placeholder"></div>
+
+        <div id="projectPanel" class="placeholder panel panel-yellow">
+            <div class="panel-heading">
+                <h4>Project</h4>
+            </div>
+            <hr />
+            <div id="project" class="panel-body">
             </div>
         </div>
     </div>
 
+    <div id="selectItem" class="modal fade in" aria-labelledby="myModalLabel" aria-hidden="true"></div>
+
+    <div id="import" class="modal fade in" aria-labelledby="myModalLabel" aria-hidden="true">
+    </div>
+
     <div id="login" class="modal fade in" aria-labelledby="myModalLabel" aria-hidden="true"></div>
-
-    <div id="coalPlantStates" class="modal fade in" aria-labelledby="myModalLabel" aria-hidden="true"></div>
-
-    <div id="windTurbineChart" class="modal fade in" aria-labelledby="myModalLabel" aria-hidden="true"></div>
 
     <div id="loadbar"></div>
 
@@ -141,9 +140,9 @@
 
     <!-- Morris Charts JavaScript -->
     <script src="Scripts/Bootstrap/raphael-min.js"></script>
-    
+
     <script src="Scripts/Bootstrap/morris.min.js"></script>
-    
+
     <!--<script src="Scripts/morris-data.js"></script>-->
     <!-- Custom Theme JavaScript -->
     <script src="Scripts/Bootstrap/sb-admin-2.js"></script>
@@ -162,8 +161,8 @@
 
     <script src="Scripts/Backbone/backbone-association.js"></script>
 
-    <script src="Scripts/Plugins/select2.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.js"></script>
+    
     <script src="Scripts/DataTables/jquery.dataTables.js"></script>
 
     <script src="Scripts/DataTables/dataTables.bootstrap.js"></script>
@@ -172,18 +171,21 @@
         var mada = {};
     </script>
 
-    <script src="Scripts/model/solarPanelModel.js?ver=20160509093751TimeStamp"></script>
-    <script src="Scripts/model/windTurbineModel.js?ver=20160509093751TimeStamp"></script>
-    <script src="Scripts/model/storageModel.js?ver=20160509093751TimeStamp"></script>
     <script src="Scripts/model/itemModel.js?ver=20160509093751TimeStamp"></script>
-    <script src="Scripts/model/configurationModel.js?ver=20160509093751TimeStamp"></script>
-    
+    <script src="Scripts/model/importModel.js?ver=20160509093751TimeStamp"></script>
+    <script src="Scripts/model/projectModel.js?ver=20160509093751TimeStamp"></script>
+
     <script src="Scripts/view/solarPanelView.js?ver=20160509093751TimeStamp"></script>
 
     <script src="Scripts/model/itemCollectionModel.js?ver=20160509093751TimeStamp"></script>
     <script src="Scripts/view/itemCollectionView.js?ver=20160509093751TimeStamp"></script>
-    <script src="Scripts/view/configurationDetailsView.js?ver=20160509093751TimeStamp"></script>
+    <script src="Scripts/view/projectView.js?ver=20160509093751TimeStamp"></script>
+    <script src="Scripts/view/projectGeneralView.js?ver=20160509093751TimeStamp"></script>
     <script src="Scripts/view/madaView.js?ver=20160509093751TimeStamp"></script>
+    <script src="Scripts/view/selectItemView.js?ver=20160509093751TimeStamp"></script>
+    <script src="Scripts/view/importView.js?ver=20160509093751TimeStamp"></script>
+    <script src="Scripts/view/projectView.js?ver=20160509093751TimeStamp"></script>
+
 
     <script src="Scripts/router.js?ver=20160509093751TimeStamp"></script>
     <script src="Scripts/controller.js?ver=20160509093751TimeStamp"></script>
